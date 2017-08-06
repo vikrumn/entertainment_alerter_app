@@ -30,5 +30,5 @@ def scrape_amazon(title):
 # Add hulu and other sites later?
 
 
-#print(scrape_netflix("Rogue One: A Star Wars Story"))
+print(scrape_netflix("Rogue One: A Star Wars Story"))
 #print(scrape_amazon('Fargo'))
