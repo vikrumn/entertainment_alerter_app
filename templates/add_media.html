@@ -1,0 +1,105 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<script type="text/javascript">
+	var access_token = "bla";
+	function httpGetAsync(theUrl, callback) {
+	    var xmlHttp = new XMLHttpRequest();
+	    xmlHttp.onreadystatechange = function() {
+	        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+	            callback(xmlHttp.responseText);
+	    }
+	    xmlHttp.open("GET", theUrl, true); // true for asynchronous
+	    xmlHttp.send(null);
+	}
+	function validate(){
+	    auth_data = {username: '{{ username }}',  password: '{{ password }}'}
+	    //media_data = {title: $("#text1").val(), type: $("#text2").val(), user: '{{ username }}'};
+	    media_data = {title: $("#text1").val()};
+	    $.ajax({
+		  type: 'POST',
+    		url : '/auth',
+    		crossDomain: true,
+    		data: JSON.stringify(auth_data),
+    		contentType:'application/json; charset=utf-8',
+    		dataType: 'json',
+		  	success: function(d){
+		  		access_token = d.access_token
+			   	$.ajax({
+		  		  	type: 'POST',
+		    		url : '/imdb_search',
+		    		crossDomain: true,
+		    		data: JSON.stringify(media_data),
+		    		contentType:'application/json; charset=utf-8',
+		    		headers: {"Authorization": "JWT " + access_token},
+		    		dataType: 'json',
+		    		success: function(d){
+		    			$("#buttondiv").empty()
+		    			for (var i = 0; i < d.presented_list.length; i++){
+		    				curr_title = d.results_list[i]
+		    				var new_button = $('<input type="button" value="' + d.presented_list[i] + '" onclick = "javascript:scrape(\'' + d.results_list[i] + '\', \'' + d.presented_list[i] + '\')"/> <br>');
+    						$("#buttondiv").append(new_button);
+		    			}
+		    		}
+				})
+		  }
+
+		});
+	    
+	}
+	function scrape(title, presented_title){
+		document.getElementById('myElement').innerText = "Searching for title...";
+		title_json = {media_title: title};
+		$.ajax({
+  		  	type: 'POST',
+    		url : '/scrape_services',
+    		crossDomain: true,
+    		data: JSON.stringify(title_json),
+    		contentType:'application/json; charset=utf-8',
+    		headers: {"Authorization": "JWT " + access_token},
+    		dataType: 'json',
+    		success: function(d){
+    			if(d.on_netflix){
+	    			document.getElementById('myElement').innerText = d.media_title + " is on Netflix";
+	    			title_json = {media_title: d.media_title, email: "vikrumn@sbcglobal.net"};
+	    			$.ajax({
+			  		  	type: 'POST',
+			    		url : '/email',
+			    		crossDomain: true,
+			    		data: JSON.stringify(title_json),
+			    		contentType:'application/json; charset=utf-8',
+			    		headers: {"Authorization": "JWT " + access_token},
+			    		dataType: 'json',
+			    	})
+	    		}
+	    		else{
+	    			data_json = {user: "{{ username }}", type: "movie"};
+	    			$.ajax({ 
+			  		  	type: 'POST',
+			    		url : '/media/' + d.media_title,
+			    		crossDomain: true,
+			    		data: JSON.stringify(data_json),
+			    		contentType:'application/json; charset=utf-8',
+			    		headers: {"Authorization": "JWT " + access_token},
+			    		dataType: 'json',
+			    	})
+	    		}
+			}
+		})
+	}
+</script>
+</head>
+<body>
+
+<div id="myElement">
+	REGISTER???
+</div>
+<form id = "media_form">
+    <input type="text" placeholder="Enter title of media" id="text1" /><br/>
+    <input type="button" value="Search"  onclick="javascript:validate()" />
+</form>
+<div id = "buttondiv">
+</div>
+</body>
+</html>

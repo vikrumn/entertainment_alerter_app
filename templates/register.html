@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
+<script type="text/javascript">
+	function httpGetAsync(theUrl, callback) {
+	    var xmlHttp = new XMLHttpRequest();
+	    xmlHttp.onreadystatechange = function() {
+	        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+	            callback(xmlHttp.responseText);
+	    }
+	    xmlHttp.open("GET", theUrl, true); // true for asynchronous
+	    xmlHttp.send(null);
+	}
+	function validate(){
+	    document.getElementById('myElement').innerText = $( "#text2" ).val();
+	    registration_data = {username: $("#text1").val(), password: $("#text2").val()};
+	    $.ajax({
+  		  type: 'POST',
+    		url : '/register',
+    		crossDomain: true,
+    		data: JSON.stringify(registration_data),
+    		contentType:'application/json; charset=utf-8',
+    		dataType: 'json'
+		})
+	}
+</script>
+</head>
+<body>
+
+<div id="myElement">
+	REGISTER???
+</div>
+<form id = "registration_form">
+    <input type="text" placeholder="Username" id="text1" /><br/>
+    <input type="password" placeholder="Password" id="text2" /><br />
+    <input type="button" value="Login"  onclick="javascript:validate()" />
+</form>
+
+</body>
+</html>
